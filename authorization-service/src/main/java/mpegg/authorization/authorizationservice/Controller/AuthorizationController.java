@@ -1,6 +1,8 @@
 package mpegg.authorization.authorizationservice.Controller;
 
 import mpegg.authorization.authorizationservice.Utils.FileUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.wso2.balana.Balana;
 import org.wso2.balana.PDP;
@@ -19,6 +21,7 @@ import java.util.Set;
 
 @RestController
 public class AuthorizationController {
+    /*
     @PostMapping("/authorize")
     String authorize(@RequestParam String request) {
         try {
@@ -30,9 +33,9 @@ public class AuthorizationController {
         Balana balana = Balana.getInstance();
         PDP pdp = new PDP(balana.getPdpConfig());
         return pdp.evaluate(request);
-    }
+    }*/
     @PostMapping("/authorize_rule")
-    String authorize_rule(@RequestParam String request, @RequestParam String rule, HttpServletResponse response) {
+    ResponseEntity<String> authorize_rule(@RequestParam("request") String request, @RequestParam("rule") String rule) {
         FileUtil fu = new FileUtil();
         String policyLocation = null;
         String name = null;
@@ -44,8 +47,7 @@ public class AuthorizationController {
             fu.createFile(policyLocation + File.separator + "policy.xml", rule);
         } catch (IOException e) {
             e.printStackTrace();
-            response.setStatus(503);
-            return "Server error";
+            return new ResponseEntity<String>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
         }
         String result = null;
         try {
@@ -66,16 +68,14 @@ public class AuthorizationController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            response.setStatus(503);
-            return "Server error";
+            return new ResponseEntity<String>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
             fu.deleteDirectory(policyLocation);
         } catch (IOException e) {
             e.printStackTrace();
-            response.setStatus(503);
-            return "Server error";
+            return new ResponseEntity<String>("Server error",HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return result;
+        return new ResponseEntity<String>(result,HttpStatus.OK);
     }
 }
